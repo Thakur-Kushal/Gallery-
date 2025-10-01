@@ -172,6 +172,10 @@
         .delete-btn:hover {
             opacity: 1;
         }
+        /* Custom Audio/Video Styling for better controls visibility */
+        .media-item video, .media-item audio {
+            background-color: #000;
+        }
     </style>
 </head>
 <body>
@@ -224,13 +228,26 @@
       projectId: "supramk4xs",
       storageBucket: "supramk4xs.firebasestorage.app",
       messagingSenderId: "supramk4xs.firebasestorage.app",
-      appId: "1:=103340817363:web:2fe6fa6468eb195b7ecd26"
+      appId: "1:=103340817363:web:2fe6fa6468eb195b7ecd26" // NOTE: I removed the extra space at the end of appId for consistency.
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
     const storage = firebase.storage();
+
+    // Global variable to hold all media elements
+    let allMediaElements = [];
+
+    // --- Naya Function: Single Playback Control ---
+    function stopOtherMedia(currentMedia) {
+        // Stop all media elements except the one currently playing
+        allMediaElements.forEach(media => {
+            if (media !== currentMedia && !media.paused) {
+                media.pause();
+            }
+        });
+    }
 
     // Check if user is logged in
     auth.onAuthStateChanged(user => {
@@ -296,6 +313,7 @@
             photosGrid.innerHTML = '';
             videosGrid.innerHTML = '';
             audioGrid.innerHTML = '';
+            allMediaElements = []; // Reset global media list
 
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -314,11 +332,15 @@
                 if (data.type === 'video') videosGrid.innerHTML += html;
                 if (data.type === 'audio') audioGrid.innerHTML += html;
             });
+            
+            // Re-setup handlers after all content is rendered
             setupDeleteButtons();
+            setupMediaControls(); // Naya function call
         });
     }
 
     function renderMedia(data) {
+        // Added 'controls' attribute to audio/video for user control
         if (data.type === 'image') {
             return `<img src="${data.url}" alt="${data.title}">`;
         } else if (data.type === 'video') {
@@ -327,6 +349,20 @@
             return `<audio controls src="${data.url}"></audio>`;
         }
         return '';
+    }
+
+    // --- Naya Function: Media Controls Setup ---
+    function setupMediaControls() {
+        // Select all video and audio elements after they are added to the DOM
+        const mediaElements = document.querySelectorAll('video, audio');
+        allMediaElements = Array.from(mediaElements); // Store elements globally
+
+        mediaElements.forEach(media => {
+            // Add an event listener to run stopOtherMedia whenever a media starts playing
+            media.addEventListener('play', () => {
+                stopOtherMedia(media);
+            });
+        });
     }
 
     function setupDeleteButtons() {
@@ -356,5 +392,5 @@
 </script>
 
 </body>
-            </html>
-                
+    </html>
+    
