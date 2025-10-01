@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🖼️ My Gallery</title>
+    <title>🖼 My Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -172,7 +172,6 @@
         .delete-btn:hover {
             opacity: 1;
         }
-        /* Custom Audio/Video Styling for better controls visibility */
         .media-item video, .media-item audio {
             background-color: #000;
         }
@@ -223,12 +222,13 @@
 <script>
     // --- IMPORTANT: Apni Firebase config yahan paste karein ---
     const firebaseConfig = {
-      apiKey: "AIzaSyDCp8kwBp0PAQoe6gJUq43OcSGeGHmUlPs",
+         apiKey: "AIzaSyDCp8kwBp0PAQoe6gJUq43OcSGeGHmUlPs",
       authDomain: "supramk4xs.firebaseapp.com",
       projectId: "supramk4xs",
       storageBucket: "supramk4xs.firebasestorage.app",
       messagingSenderId: "supramk4xs.firebasestorage.app",
       appId: "1:=103340817363:web:2fe6fa6468eb195b7ecd26" // NOTE: I removed the extra space at the end of appId for consistency.
+
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -236,12 +236,9 @@
     const db = firebase.firestore();
     const storage = firebase.storage();
 
-    // Global variable to hold all media elements
     let allMediaElements = [];
 
-    // --- Naya Function: Single Playback Control ---
     function stopOtherMedia(currentMedia) {
-        // Stop all media elements except the one currently playing
         allMediaElements.forEach(media => {
             if (media !== currentMedia && !media.paused) {
                 media.pause();
@@ -249,13 +246,12 @@
         });
     }
 
-    // Check if user is logged in
     auth.onAuthStateChanged(user => {
         if (!user) {
             window.location.href = "index.html";
         } else {
             displayGallery();
-        }   
+        }
     });
 
     const logoutBtn = document.getElementById('logout-btn');
@@ -280,6 +276,7 @@
         const title = mediaTitle.value || "Untitled";
         const description = mediaDesc.value || "No description.";
         const type = file.type.split('/')[0];
+        // FIX 3: JavaScript में वैरिएबल यूज़ करने के लिए बैक-टिक्स (`) का इस्तेमाल करें
         const fileName = `${Date.now()}_${file.name}`;
         const storageRef = storage.ref().child(`${type}s/${fileName}`);
 
@@ -313,7 +310,7 @@
             photosGrid.innerHTML = '';
             videosGrid.innerHTML = '';
             audioGrid.innerHTML = '';
-            allMediaElements = []; // Reset global media list
+            allMediaElements = []; 
 
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -333,14 +330,12 @@
                 if (data.type === 'audio') audioGrid.innerHTML += html;
             });
             
-            // Re-setup handlers after all content is rendered
             setupDeleteButtons();
-            setupMediaControls(); // Naya function call
+            setupMediaControls(); 
         });
     }
 
     function renderMedia(data) {
-        // Added 'controls' attribute to audio/video for user control
         if (data.type === 'image') {
             return `<img src="${data.url}" alt="${data.title}">`;
         } else if (data.type === 'video') {
@@ -351,14 +346,11 @@
         return '';
     }
 
-    // --- Naya Function: Media Controls Setup ---
     function setupMediaControls() {
-        // Select all video and audio elements after they are added to the DOM
         const mediaElements = document.querySelectorAll('video, audio');
-        allMediaElements = Array.from(mediaElements); // Store elements globally
+        allMediaElements = Array.from(mediaElements);
 
         mediaElements.forEach(media => {
-            // Add an event listener to run stopOtherMedia whenever a media starts playing
             media.addEventListener('play', () => {
                 stopOtherMedia(media);
             });
@@ -375,6 +367,7 @@
                 const confirmed = confirm("Are you sure you want to delete this file?");
                 if (confirmed) {
                     db.collection('media').doc(docId).delete().then(() => {
+                        // FIX 4: यहाँ भी वैरिएबल यूज़ करने के लिए बैक-टिक्स (`) का इस्तेमाल करें
                         storage.ref(`${fileType}s/${fileName}`).delete().then(() => {
                             alert("File deleted successfully!");
                         }).catch(error => {
@@ -393,4 +386,3 @@
 
 </body>
     </html>
-    
